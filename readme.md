@@ -16,7 +16,7 @@ This project provides a RESTful API for managing a collection of cereals. It inc
 ## Features
 
 - **CRUD Operations**: Create, read, update, and delete cereal records.
-- **Filtering**: Filter cereals based on manufacturer (`mfr`) and shelf number (`shelf`).
+- **Filtering**: Filter cereals based on query parameters.
 - **Concurrent Execution**: The application runs the Flask API and a test driver concurrently using multithreading.
 
 ## Installation
