@@ -5,6 +5,7 @@ from models.Cereal import Cereal
 
 
 class Parser():
+    """" This class is responsible for reading the CSV file and returning a list of Cereal objects """
     def __init__(self, file="Cereal"):
         self.file = file
         self.file_path = f"data/{self.file}.csv"

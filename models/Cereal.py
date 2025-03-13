@@ -3,84 +3,65 @@ class Cereal:
                  name: str,
                  mfr: str,
                  type_: str,
-                 calories: int,
-                 protein: int,
-                 fat: int,
-                 sodium: int,
-                 fiber: float,
-                 carbo: float,
-                 sugars: int,
-                 potass: int,
-                 vitamins: int,
-                 shelf: int,
-                 weight: float,
-                 cups: float,
-                 rating: float):
+                 calories: int = 0,
+                 protein: int = 0,
+                 fat: int = 0,
+                 sodium: int = 0,
+                 fiber: float = 0.0,
+                 carbo: float = 0.0,
+                 sugars: int = 0,
+                 potass: int = 0,
+                 vitamins: int = 0,
+                 shelf: int = 0,
+                 weight: float = 0.0,
+                 cups: float = 0.0,
+                 rating: float = 0.0,
+                 id: int = None):  # Optional id field
 
-        # Type assignments
+        self.id = id
         self.name = name
         self.mfr = mfr
         self.type_ = type_
-        self.calories = int(calories)
-        self.protein = int(protein)
-        self.fat = int(fat)
-        self.sodium = int(sodium)
-        self.fiber = float(fiber)
-        self.carbo = float(carbo)
-        self.sugars = int(sugars)
-        self.potass = int(potass)
-        self.vitamins = int(vitamins)
-        self.shelf = int(shelf)
-        self.weight = float(weight)
-        self.cups = float(cups)
-        self.rating = float(rating.replace('.', '')) if isinstance(
-            rating, str) else float(rating)
-
-    def count_attributes(self) -> int:
-        # Returns the number of attributes in the Cereal object.
-        return len(self.__dict__)
-
-    def __repr__(self) -> str:
-        return f"Cereal({self.name}, {self.mfr}, {self.type_}, {self.calories} cal)"
+        self.calories = calories
+        self.protein = protein
+        self.fat = fat
+        self.sodium = sodium
+        self.fiber = fiber
+        self.carbo = carbo
+        self.sugars = sugars
+        self.potass = potass
+        self.vitamins = vitamins
+        self.shelf = shelf
+        self.weight = weight
+        self.cups = cups
+        self.rating = rating
 
     @classmethod
     def from_dict(cls, data):
-        # Automatically converts data (e.g., dictionary) into class instance.
+        if 'name' not in data or 'mfr' not in data or 'type' not in data:
+            raise ValueError(
+                "Missing required fields: 'name', 'mfr', and 'type' are mandatory.")
+
         return cls(
-            name=data['name'],
-            mfr=data['mfr'],
-            type_=data['type'],
-            calories=data['calories'],
-            protein=data['protein'],
-            fat=data['fat'],
-            sodium=data['sodium'],
-            fiber=data['fiber'],
-            carbo=data['carbo'],
-            sugars=data['sugars'],
-            potass=data['potass'],
-            vitamins=data['vitamins'],
-            shelf=data['shelf'],
-            weight=data['weight'],
-            cups=data['cups'],
-            rating=data['rating']
+            id=data.get('id'),  # Optional id field
+            name=data.get('name'),
+            mfr=data.get('mfr'),
+            type_=data.get('type'),
+            calories=data.get('calories', 0),
+            protein=data.get('protein', 0),
+            fat=data.get('fat', 0),
+            sodium=data.get('sodium', 0),
+            fiber=data.get('fiber', 0.0),
+            carbo=data.get('carbo', 0.0),
+            sugars=data.get('sugars', 0),
+            potass=data.get('potass', 0),
+            vitamins=data.get('vitamins', 0),
+            shelf=data.get('shelf', 0),
+            weight=data.get('weight', 0.0),
+            cups=data.get('cups', 0.0),
+            rating=data.get('rating', 0.0)
         )
 
-    def to_dict(self) -> dict:
-        return {
-            "name": self.name,
-            "mfr": self.mfr,
-            "type": self.type_,
-            "calories": self.calories,
-            "protein": self.protein,
-            "fat": self.fat,
-            "sodium": self.sodium,
-            "fiber": self.fiber,
-            "carbo": self.carbo,
-            "sugars": self.sugars,
-            "potass": self.potass,
-            "vitamins": self.vitamins,
-            "shelf": self.shelf,
-            "weight": self.weight,
-            "cups": self.cups,
-            "rating": self.rating
-        }
+    def to_dict(self):
+        # Convert the object's attributes to a dictionary, excluding 'id'
+        return {key: value for key, value in self.__dict__.items() if key != 'id'}

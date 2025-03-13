@@ -1,37 +1,29 @@
 import os
+from flask import jsonify
 from typing import List
-
-from flask import json, jsonify
+from models.ApiResponse import ApiResponse
 from models.Cereal import Cereal
 from models.Filter import Filter
 from dotenv import load_dotenv
 import sqlite3
-
-from utils import get_columns_and_placeholders, jsonify_result
+from utils import get_assignments_and_values, get_columns_and_placeholders, is_successful
 
 load_dotenv()
 
 
-class SQLiteClient():
+class SQLiteClient:
     def __init__(self):
         self.table_name = "cereals"
+        self._initialize_db()
 
     def connect(self):
-        try:
-            self.connection = sqlite3.connect("cereals.db")
-            # This makes fetchall() return dictionaries
-            self.connection.row_factory = sqlite3.Row
-            self.cursor = self.connection.cursor()
-        except sqlite3.Error as e:
-            print("Error connecting to database:", e)
+        connection = sqlite3.connect("cereals.db")
+        connection.row_factory = sqlite3.Row
+        return connection
 
-        except Exception as e:
-            print(e)
-
-    def create_table(self, table_name: str) -> str:
-        # Directly define the columns and types for the schema
+    def _initialize_db(self):
         query = f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
+        CREATE TABLE IF NOT EXISTS {self.table_name} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name VARCHAR(255),
             mfr VARCHAR(255),
@@ -51,142 +43,153 @@ class SQLiteClient():
             rating FLOAT
         );
         """
+        result = self.execute_query(query)
 
-        try:
-            self.execute_query(query)
-            return f"Table {table_name} created!"
-        except Exception as e:
-            print("Error creating table", e)
+        if result:
+            print("Database initialized successfully")
 
-    def create(self, cereal: Cereal) -> str:
-        query = f"INSERT INTO cereals (name, manufacturer, calories, protein, fat, sodium, fiber, carbo, sugars, potassium, vitamins, shelf, weight, cups, rating) VALUES {cereal}"
-        try:
-            self.cursor.execute(query)
-            return "Cereal succesfully created!"
-        except Exception as e:
-            print("Error creating cereal", e)
+    def create(self, cereal: Cereal) -> ApiResponse:
+        data = [
+            cereal.name, cereal.mfr, cereal.type_, cereal.calories, cereal.protein, cereal.fat,
+            cereal.sodium, cereal.fiber, cereal.carbo, cereal.sugars, cereal.potass,
+            cereal.vitamins, cereal.shelf, cereal.weight, cereal.cups, cereal.rating
+        ]
+        columns, placeholders = get_columns_and_placeholders(cereal)
+        query = f"INSERT INTO cereals ({columns}) VALUES ({placeholders})"
+        result = self.execute_db_operation(
+            query, data, "Created cereal successfully")
 
-    def read_all(self) -> List[Cereal]:
+        return result
+
+    def read_all(self) -> ApiResponse:
         query = "SELECT * FROM cereals"
-        try:
-            result = self.execute_query(query)
+        result = self.execute_db_operation(
+            query, None, "Fetched all cereals successfully")
+        return result
 
-            return jsonify_result(result)
+    def read(self, id: int) -> ApiResponse:
+        query = "SELECT * FROM cereals WHERE id = ?"
+        result = self.execute_db_operation(
+            query, (id,), "Fetched cereal successfully")
+        return result
 
-        except Exception as e:
-            print("Error reading all cereals", e)
+    def update(self, id: int, cereal: Cereal) -> ApiResponse:
+        assignments, values = get_assignments_and_values(cereal)
+        query = f"UPDATE cereals SET {assignments} WHERE id = ?"
+        data = values + (id,)
+        result = self.execute_db_operation(
+            query, data, "Updated cereal successfully")
+        return result
 
-    def read(self, id: int) -> Cereal:
-        query = f"SELECT * FROM cereals WHERE id = {id}"
-        try:
-            result = self.execute_query(query)
+    def delete(self, id: int) -> ApiResponse:
+        query = "DELETE FROM cereals WHERE id = ?"
+        data = (id,)
+        result = self.execute_db_operation(
+            query, data, "Deleted cereal successfully")
+
+        return result
+
+    def list(self) -> ApiResponse:
+        query = "SELECT * FROM cereals"
+        result = self.execute_db_operation(
+            query, None, "Fetched all cereals successfully")
+
+        return result
+
+    def filter(self, filters: List[Filter]) -> ApiResponse:
+        conditions = " AND ".join(f"{f.field} = ?" for f in filters)
+        values = [f.value for f in filters]
+        query = f"SELECT * FROM cereals WHERE {conditions}"
+        result = self.execute_db_operation(query, tuple(
+            values), f"Filtered cereals successfully")
+
+        if result.data:
+            result.message = f"Found {len(result.data)} cereals"
             return result
-        except Exception as e:
-            print("Error reading cereal", e)
-            return None
 
-    def update(self, id: int, data: Cereal) -> str:
-        query = f"UPDATE cereals SET {data} WHERE id = {id}"
-        try:
-            self.cursor.execute(query)
-            return f"Cereal updated!"
-        except Exception as e:
-            print("Error updating cereal", e)
-
-    def delete(self, id: int) -> str:
-        query = f"DELETE FROM cereals WHERE id = {id}"
-        try:
-            self.cursor.execute(query)
-            return "Cereal deleted!"
-        except Exception as e:
-            print("Error deleting cereal", e)
-
-    def list(self) -> List[Cereal]:
-        query = "SELECT * FROM cereals"
-
-        try:
-            cereals = self.cursor.execute(query)
-            return cereals
-
-        except Exception as e:
-            print("Error listing cereals", e)
-
-    def filter(self, filters: List[Filter]):
-        query = "SELECT * FROM cereals WHERE "
-        conditions = []
-
-        for filter in filters:
-            condition = f"{filter.field} = {filter.value}"
-            conditions.append(condition)
-
-        # Join all the filter conditions with AND
-        query += " AND ".join(conditions)
-
-        try:
-            result = self.execute_query(query)
-
-            return jsonify_result(result)
-        except Exception as e:
-            print("Error filtering cereals", e)
+        else:
+            return ApiResponse("error", f"No cereals found for filters", 404)
 
     def does_product_exist(self, id: int) -> bool:
         result = self.read(id)
+        return bool(result.data)
 
-        if result:
-            return True
-
-        return False
-
-    def insert_data(self, cereals: List[Cereal], table_name: str):
-        self.create_table(table_name)
-
+    def insert_data(self, cereals: List[Cereal]) -> ApiResponse:
         columns, placeholders = get_columns_and_placeholders(cereals[0])
+        # Make sure to use INSERT OR IGNORE to avoid inserting duplicate data
+        query = f"INSERT OR IGNORE INTO cereals ({columns}) VALUES ({placeholders})"
+        data = [(
+            cereal.name, cereal.mfr, cereal.type_, cereal.calories, cereal.protein, cereal.fat,
+            cereal.sodium, cereal.fiber, cereal.carbo, cereal.sugars, cereal.potass,
+            cereal.vitamins, cereal.shelf, cereal.weight, cereal.cups, cereal.rating
+        ) for cereal in cereals]
+        result = self.execute_db_operation(
+            query, data, "Inserted cereals successfully", multiple=True)
+        return result
 
-        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-
-        # Prepare the data to be inserted
-        data = [
-            (
-                cereal.name, cereal.mfr, cereal.type_, cereal.calories, cereal.protein, cereal.fat,
-                cereal.sodium, cereal.fiber, cereal.carbo, cereal.sugars, cereal.potass,
-                cereal.vitamins, cereal.shelf, cereal.weight, cereal.cups, cereal.rating
-            )
-            for cereal in cereals  # This gathers all the cereal data
-        ]
-
-        result = self.execute_query(query, data)
-
-        if result:
-            return f"Data inserted successfully!"
-
-    def execute_query(self, query, data=None):
+    def execute_query(self, query: str, data=None, multiple=False) -> ApiResponse:
+        """
+        This method is used to execute SQL queries on the database.
+        It returns an ApiResponse object with the appropriate response and status code.
+        """
         query_type = query.strip().split(" ")[0].upper()
-        self.connect()
-        try:
-            if query_type == "SELECT":
-                result = self.cursor.execute(query).fetchall()
-
-            if query_type in ["INSERT", "UPDATE", "DELETE"]:
-                if not data:
-                    result = self.cursor.execute(query)
-                else:
-                    result = self.cursor.executemany(query, data)
-
-            self.connection.commit()
-            return result
-
-        except Exception as e:
-            print("Error inserting data: ", e)
-
-        finally:
-            self.connection.close()
-
-    def drop_table(self, table_name: str) -> str:
-        query = f"DROP TABLE IF EXISTS {table_name};"
 
         try:
-            self.execute_query(query)
-            return f"Table {table_name} dropped successfully!"
-        except Exception as e:
-            print(f"Error dropping table {table_name}: {e}")
-            return f"Error dropping table {table_name}"
+            with self.connect() as connection:
+                cursor = connection.cursor()
+
+                # This handles CREATE queries. It currently only supports CREATE TABLE queries.
+
+                if query_type == "CREATE":
+                    result = cursor.execute(query)
+                    return result
+
+                if query_type == "SELECT":
+                    cursor.execute(query, data or [])
+                    result = cursor.fetchall()
+                    data = [dict(row) for row in result]
+                    return ApiResponse("success", "Query executed successfully", 200, data)
+
+                """
+                The following block of code is used to handle INSERT, UPDATE, and DELETE queries.
+                It returns a different response and status code based on the query type.
+                INSERT: 201 (Created)
+                UPDATE: 200 (OK)
+                DELETE: 204 (No Content/Deleted)
+                """
+                if query_type == "INSERT":
+                    if multiple:
+                        cursor.executemany(query, data)
+                    else:
+                        cursor.execute(query, data)
+                        connection.commit()
+                    return ApiResponse("success", "Resource created successfully", 201)
+
+                if query_type == "UPDATE":
+                    cursor.execute(query, data)
+                    connection.commit()
+                    return ApiResponse("success", "Resource updated successfully", 200)
+
+                if query_type == "DELETE":
+                    cursor.execute(query, data)
+                    connection.commit()
+                    return ApiResponse("success", "Resource deleted successfully", 204)
+
+        except sqlite3.Error as e:
+            return ApiResponse("error", "Database query failed", 500, details=str(e))
+
+    def execute_db_operation(self, query: str, params: tuple, success_message: str, multiple=None) -> ApiResponse:
+        """
+        This method functions as a wrapper around the execute_query method.
+        It ensures that the appropriate success message is returned based on the query type.   
+        """
+        result = self.execute_query(query, params, multiple)
+        if is_successful(result.status_code):
+            result.set_message(success_message)
+
+        return result
+
+    # This method is used to drop the table if it exists. It is useful for testing purposes.
+    def drop_table(self) -> ApiResponse:
+        query = f"DROP TABLE IF EXISTS {self.table_name};"
+        return self.execute_query(query)
