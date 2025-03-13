@@ -10,8 +10,6 @@ This project provides a RESTful API for managing a collection of cereals. It inc
   - [Running the Application](#running-the-application)
   - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
