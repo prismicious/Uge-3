@@ -91,7 +91,7 @@ class Driver():
         sleep()
 
         # 5. Create a cereal
-        result = self.create_cereal(201)  # POST /cereals
+        result = self.create_cereal(id=None, expected_status_code=201)  # POST /cereals
         results.append(result)
         sleep()
 
