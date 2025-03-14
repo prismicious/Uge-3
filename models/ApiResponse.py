@@ -16,7 +16,7 @@ class ApiResponse:
             "message": self.message,
             "action": self.action,
             "status_code": self.status_code,
-            "data": self.data,  # None will be skipped if it's not provided
+            "data": self.data,  # Data will be skipped if it's not provided
             "details": self.details  # Same for details
         }
 

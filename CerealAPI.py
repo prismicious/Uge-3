@@ -9,6 +9,15 @@ from models.ApiResponse import ApiResponse
 
 
 class CerealAPI():
+    """
+    This class is responsible for handling all API operations.
+    It initializes the Flask app and registers the routes for the API.
+    The routes are:
+    - /ping: Returns "Pong!" if the API is running
+    - /cereals: GET - Returns all cereals, POST - Creates a new cereal
+    - /cereals/<id>: GET - Returns a cereal by ID, POST - Updates a cereal by ID, DELETE - Deletes a cereal by ID
+    The response always returns a jsonified ApiResponse object.
+    """
     def __init__(self, sql_client: SQLiteClient):
         self.app = Flask(__name__)
         self._register_routes()
@@ -24,15 +33,16 @@ class CerealAPI():
 
         @self.app.route("/cereals", methods=["GET", "POST"])
         def handle_cereals():
+        # This function handles GET and POST requests to the /cereals endpoint
             if request.method == "GET":
                 result, status_code = self.get_cereals()
                 return result, status_code
             elif request.method == "POST":
-
-                has_password = request.json.get('password')
-
-                if not has_password:
-                    return ApiResponse("error", "Password not set", 401).to_json(), 401
+                try:
+                    request.json.get('password')
+                    
+                except Exception as e:
+                    return ApiResponse("error", str(e), 400).to_json(), 400
 
                 authorised = is_authorised(request.json)
 
@@ -51,12 +61,25 @@ class CerealAPI():
 
         @self.app.route("/cereals/<int:id>", methods=["GET", "POST", "DELETE"])
         def handle_cereal_by_id(id):
+        # This function handles GET, POST, and DELETE requests to the /cereals/<id> endpoint
             try:
                 if request.method == "GET":
                     result, status_code = self.get_cereal_by_id(id)
                     return result, status_code
 
                 elif request.method == "POST":
+                    try:
+                        request.json.get('password')
+                        
+                    except Exception as e:
+                        return ApiResponse("error", str(e), 400).to_json(), 400
+                    
+                    authorised = is_authorised(request.json)
+
+                    if not authorised:
+                        return ApiResponse("error", "Unauthorized", 401).to_json(), 401
+
+                    # We need to check if the request body is JSON or if it exists
                     validation_error = validate_request_body(request)
                     if validation_error:
                         return validation_error.to_json()
@@ -64,14 +87,28 @@ class CerealAPI():
                     return result, status_code
 
                 elif request.method == "DELETE":
-                        result, status_code = self.delete_cereal(id)  
+                    try:
+                        request.json.get('password')
                         
-                        return result, status_code
+                    except Exception as e:
+                        return ApiResponse("error", str(e), 400).to_json(), 400
+
+                    authorised = is_authorised(request.json)
+
+                    if not authorised:
+                        return ApiResponse("error", "Unauthorized", 401).to_json(), 401
+
+                    result, status_code = self.delete_cereal(id)  
+                    
+                    return result, status_code
 
             except Exception as e:
                 return ApiResponse("error", str(e), 400).to_json(), 400
 
     def get_cereals(self):
+        """
+        Handles the business logic for getting all cereals or filtering cereals based on query parameters.
+        """
         try:
             if not request.args:
                 result = self.sql_client.read_all()
@@ -84,6 +121,9 @@ class CerealAPI():
             return ApiResponse("error", str(e), 400).to_json(), 400
 
     def create_or_update_cereal(self, id):
+        """
+        Handles the business logic for creating or updating a cereal.
+        """
         try:
             data = request.json
             cereal = Cereal.from_dict(data)
@@ -103,6 +143,9 @@ class CerealAPI():
             return ApiResponse("error", str(e), 400).to_json(), 400
 
     def get_cereal_by_id(self, id):
+        """
+        Handles the business logic for getting a cereal by ID.
+        """
         try:
             product_exists = self.sql_client.does_product_exist(id)
 
@@ -116,6 +159,7 @@ class CerealAPI():
             return ApiResponse("error", str(e), 400).to_json(), 400
 
     def update_cereal(self, id, data):
+        """Handles the business logic for updating a cereal."""
         try:
             cereal = Cereal.from_dict(data)
 
@@ -131,6 +175,7 @@ class CerealAPI():
             return ApiResponse("error", str(e), 400).to_json(), 400
 
     def delete_cereal(self, id):
+        """Handles the business logic for deleting a cereal."""
         try:
             result = self.sql_client.delete(id)
 

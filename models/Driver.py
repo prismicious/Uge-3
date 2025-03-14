@@ -137,7 +137,9 @@ class Driver():
     def delete_cereal(self, id, expected_status_code):
         endpoint = f"http://{self.url}/cereals/{id}"
 
-        response = self.send_request(endpoint, "DELETE",)
+        response = self.send_request(endpoint, "DELETE", {
+            "password": password
+        })
 
         return verify_status_code(response.get("status_code"), expected_status_code, response)
 

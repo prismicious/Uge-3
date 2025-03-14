@@ -12,6 +12,15 @@ load_dotenv()
 
 
 class SQLiteClient:
+    """
+    This class is responsible for handling all database operations.
+    It initializes the database and provides methods for CRUD operations on the 'cereals' table.
+    It also provides methods for filtering and listing cereals.
+    It uses the method execute_query to execute SQL queries on the database.
+        - execute_query returns an ApiResponse object with the appropriate response and status code.
+    Execute_db_operation is a wrapper around execute_query that ensures the appropriate success message is returned.
+    Every method returns an ApiResponse object.
+    """
     def __init__(self):
         self.table_name = "cereals"
         self._initialize_db()

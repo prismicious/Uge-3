@@ -34,7 +34,7 @@ class Main:
         flask_thread.start()
         
         print("Waiting for the Flask app to start...")
-        time.sleep(3) # Wait for the Flask app to start (estimated time)
+        time.sleep(3) # Wait for the Flask app to start (~estimated time)
         self.driver.test_api()  
 
 if __name__ == "__main__":
