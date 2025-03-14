@@ -91,6 +91,11 @@ class SQLiteClient:
         return result
 
     def delete(self, id: int) -> ApiResponse:
+        cereal = self.read(id).data
+        
+        if not cereal:
+            return ApiResponse("error", "Cereal not found", 404)
+        
         query = "DELETE FROM cereals WHERE id = ?"
         data = (id,)
         result = self.execute_db_operation(
