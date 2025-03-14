@@ -1,7 +1,5 @@
 import csv
 import os
-
-import bcrypt
 import dotenv
 from flask import jsonify
 from models.Filter import Filter
