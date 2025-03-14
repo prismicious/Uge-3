@@ -90,7 +90,6 @@ My questions:
 - For the design of this API I have tried to adhere to RESTful practices.
 - Therefore I only have one endpoint cereals/
 - I have also tried to structure the code as OOP.
-- I tried to comply with the SOLID principles.
 - To create overview for the user I added the ApiResponse class to ensure all responses are consistent and provide the relevant information.
 - I tried to limit code duplication as much as possible.
 - Sometime into the process I realized that I may have been better off using flask_restx to structure the api more like an enterprise version. This would make it possible to auto generate the swagger documents.
