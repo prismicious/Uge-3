@@ -12,9 +12,6 @@ dotenv.load_dotenv
 password_from_env = os.getenv('PASSWORD', 'test_password')
 
 
-salt = bcrypt.gensalt()
-
-
 def read_file(file):
     with open(file, 'r') as f:
         return f.read()
@@ -93,7 +90,8 @@ def is_successful(status_code):
 
 def is_authorised(request_json):
     input_password = request_json.get('password')
-    if bcrypt.checkpw(input_password.encode(), password_from_env.encode()):
+
+    if input_password == password_from_env:
         return True
-    
+
     return False

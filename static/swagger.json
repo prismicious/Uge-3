@@ -1,0 +1,90 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "Cereal API",
+      "description": "API for managing cereals database"
+    },
+    "host": "localhost:5000",
+    "schemes": ["http"],
+    "basePath": "/api",
+    "paths": {
+      "/cereals": {
+        "get": {
+          "summary": "Get all cereals",
+          "operationId": "getCereals",
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "type": "array",
+                "items": {"$ref": "#/definitions/Cereal"}
+              }
+            }
+          }
+        },
+        "post": {
+          "summary": "Create a new cereal",
+          "operationId": "createCereal",
+          "parameters": [
+            {
+              "in": "body",
+              "name": "body",
+              "required": true,
+              "schema": {"$ref": "#/definitions/Cereal"}
+            }
+          ],
+          "responses": {
+            "201": {"description": "Cereal created successfully"}
+          }
+        }
+      },
+      "/cereals/{id}": {
+        "get": {
+          "summary": "Get a cereal by ID",
+          "operationId": "getCerealById",
+          "parameters": [
+            {"name": "id", "in": "path", "required": true, "type": "integer"}
+          ],
+          "responses": {
+            "200": {"description": "Successful response", "schema": {"$ref": "#/definitions/Cereal"}},
+            "404": {"description": "Cereal not found"}
+          }
+        },
+        "delete": {
+          "summary": "Delete a cereal",
+          "operationId": "deleteCereal",
+          "parameters": [
+            {"name": "id", "in": "path", "required": true, "type": "integer"}
+          ],
+          "responses": {
+            "204": {"description": "Cereal deleted successfully"}
+          }
+        }
+      }
+    },
+    "definitions": {
+      "Cereal": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "mfr": {"type": "string"},
+          "type_": {"type": "string"},
+          "calories": {"type": "integer"},
+          "protein": {"type": "number"},
+          "fat": {"type": "number"},
+          "sodium": {"type": "number"},
+          "fiber": {"type": "number"},
+          "carbo": {"type": "number"},
+          "sugars": {"type": "number"},
+          "potass": {"type": "number"},
+          "vitamins": {"type": "number"},
+          "shelf": {"type": "integer"},
+          "weight": {"type": "number"},
+          "cups": {"type": "number"},
+          "rating": {"type": "number"}
+        }
+      }
+    }
+  }
+  

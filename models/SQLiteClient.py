@@ -168,7 +168,7 @@ class SQLiteClient:
                 if query_type == "UPDATE":
                     cursor.execute(query, data)
                     connection.commit()
-                    return ApiResponse("success", "Resource updated successfully", 200)
+                    return ApiResponse("success", "Resource updated successfully", 201)
 
                 if query_type == "DELETE":
                     cursor.execute(query, data)

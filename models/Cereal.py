@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class Cereal:
     def __init__(self,
                  name: str,
@@ -65,3 +68,17 @@ class Cereal:
     def to_dict(self):
         # Convert the object's attributes to a dictionary, excluding 'id'
         return {key: value for key, value in self.__dict__.items() if key != 'id'}
+    
+class Categorical(Enum):
+    A = "American Home Food Products"
+    G = "General Mills"
+    K = "Kelloggs"
+    N = "Nabisco"
+    P = "Post"
+    Q = "Quaker Oats"
+    R = "Ralston Purina"
+    
+class Type(Enum):
+    C = "Cold"
+    H = "Hot"
+    

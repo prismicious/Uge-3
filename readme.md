@@ -10,6 +10,8 @@ This project provides a RESTful API for managing a collection of cereals. It inc
   - [Running the Application](#running-the-application)
   - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
+- [Feedback](#feedback)
+- [DesignDecisions](#designdecisions)
 
 ## Features
 
@@ -30,6 +32,7 @@ This project provides a RESTful API for managing a collection of cereals. It inc
     ```bash
     pip install -r requirements.txt
     ```
+    
 ## Usage
 
 ### Running the Application
@@ -44,8 +47,6 @@ python main.py
 ## API Documentation
 
 ### Authorization
-
-The API utilizes password authentication with bcrypt hashing.
 
 - **GET** requests do not require authentication.
 - **POST**, **INSERT**, and **DELETE** requests require authentication.
@@ -76,3 +77,21 @@ The `Driver` class contains methods to test the API endpoints. It performs the f
 7. Attempt to retrieve a non-existent cereal by ID.
 
 These tests run automatically when the application is started.
+
+## Feedback
+I would like to receive feedback on my database handling. It is what I have
+the least experience with. 
+My questions:
+- Is this a good way to do it? 
+- How can I make it more modular and flexible?
+- Is it redundant to create the Cereal object when I'm not actively altering the data and just sending around dictionaries?
+
+## Design Decisions:
+- For the design of this API I have tried to adhere to RESTful practices.
+- Therefore I only have one endpoint cereals/
+- I have also tried to structure the code as OOP.
+- I tried to comply with the SOLID principles.
+- To create overview for the user I added the ApiResponse class to ensure all responses are consistent and provide the relevant information.
+- I tried to limit code duplication as much as possible.
+- Sometime into the process I realized that I may have been better off using flask_restx to structure the api more like an enterprise version. This would make it possible to auto generate the swagger documents.
+- I added the Cereal class to structure my objects - However now I wonder if this is necessary, since I don't perform any manipulation of the objects, and whether it might have been adequate to use dictionaries?
