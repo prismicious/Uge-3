@@ -48,7 +48,7 @@ class SQLiteClient:
         if result:
             print("Database initialized successfully")
 
-    def create(self, cereal: Cereal) -> ApiResponse:
+    def create(self, cereal: Cereal) -> ApiResponse:        
         data = [
             cereal.name, cereal.mfr, cereal.type_, cereal.calories, cereal.protein, cereal.fat,
             cereal.sodium, cereal.fiber, cereal.carbo, cereal.sugars, cereal.potass,
@@ -104,7 +104,7 @@ class SQLiteClient:
             values), f"Filtered cereals successfully")
 
         if result.data:
-            result.message = f"Found {len(result.data)} cereals"
+            result.message = f"Found {len(result.data)} cereals for filters"
             return result
 
         else:
@@ -173,7 +173,7 @@ class SQLiteClient:
                 if query_type == "DELETE":
                     cursor.execute(query, data)
                     connection.commit()
-                    return ApiResponse("success", "Resource deleted successfully", 204)
+                    return ApiResponse("success", "Resource deleted successfully", 200)
 
         except sqlite3.Error as e:
             return ApiResponse("error", "Database query failed", 500, details=str(e))

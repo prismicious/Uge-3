@@ -95,3 +95,4 @@ My questions:
 - I tried to limit code duplication as much as possible.
 - Sometime into the process I realized that I may have been better off using flask_restx to structure the api more like an enterprise version. This would make it possible to auto generate the swagger documents.
 - I added the Cereal class to structure my objects - However now I wonder if this is necessary, since I don't perform any manipulation of the objects, and whether it might have been adequate to use dictionaries?
+- I did not do verification on the constraints related to the Cereal class - I would add an enum called Categorical for mfr and type.

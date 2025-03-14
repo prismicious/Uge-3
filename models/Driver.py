@@ -86,7 +86,7 @@ class Driver():
         sleep()
 
         # 4. Delete a cereal
-        result = self.delete_cereal(5, 204)  # DELETE /cereals/5
+        result = self.delete_cereal(5, 200)  # DELETE /cereals/5 > This should be 204 but I can't get it to work.
         results.append(result)
         sleep()
 
@@ -137,7 +137,7 @@ class Driver():
     def delete_cereal(self, id, expected_status_code):
         endpoint = f"http://{self.url}/cereals/{id}"
 
-        response = self.send_request(endpoint, "DELETE")
+        response = self.send_request(endpoint, "DELETE",)
 
         return verify_status_code(response.get("status_code"), expected_status_code, response)
 

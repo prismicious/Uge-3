@@ -1,7 +1,6 @@
 import os
-from flask import Flask, request, send_from_directory
-from flask_swagger_ui import get_swaggerui_blueprint
-from dotenv import load_dotenv
+from flask import Flask, request
+
 
 from models.SQLiteClient import SQLiteClient
 from models.Cereal import Cereal
@@ -15,23 +14,7 @@ class CerealAPI():
         self._register_routes()
         self.app.url_map.strict_slashes = False  # Disable strict slashes
         self.sql_client = sql_client
-        self._register_swagger()
         self.app.config['JSON_SORT_KEYS'] = False  # Disable sorting of keys
-
-    def _register_swagger(self):
-        SWAGGER_URL = "/cereals/swagger"
-        API_URL = "/swagger.json"
-
-        swaggerui_blueprint = get_swaggerui_blueprint(
-            SWAGGER_URL, API_URL, config={"app_name": "Cereal API"}
-        )
-
-        self.app.register_blueprint(
-            swaggerui_blueprint, url_prefix=SWAGGER_URL)
-
-        @self.app.route("/swagger.json")
-        def swagger_json():
-            return send_from_directory("static", "swagger.json")
 
     def _register_routes(self):
         @self.app.route("/ping", methods=["GET"])
@@ -60,8 +43,10 @@ class CerealAPI():
 
                 if validation_error:
                     return validation_error.to_json(), 400
+                
+                id = request.json.get('id')
 
-                result, status_code = self.create_or_update_cereal()
+                result, status_code = self.create_or_update_cereal(id)
                 return result, status_code
 
         @self.app.route("/cereals/<int:id>", methods=["GET", "POST", "DELETE"])
@@ -75,12 +60,13 @@ class CerealAPI():
                     validation_error = validate_request_body(request)
                     if validation_error:
                         return validation_error.to_json()
-                    result, status_code = self.create_or_update_cereal()
+                    result, status_code = self.create_or_update_cereal(id)
                     return result, status_code
 
                 elif request.method == "DELETE":
-                    result, status_code = self.delete_cereal(id)
-                    return result, status_code
+                        result, status_code = self.delete_cereal(id)  
+                        
+                        return result, status_code
 
             except Exception as e:
                 return ApiResponse("error", str(e), 400).to_json(), 400
@@ -97,16 +83,16 @@ class CerealAPI():
         except Exception as e:
             return ApiResponse("error", str(e), 400).to_json(), 400
 
-    def create_or_update_cereal(self):
+    def create_or_update_cereal(self, id):
         try:
             data = request.json
             cereal = Cereal.from_dict(data)
 
-            if not cereal.id:
+            if not id:
                 result = self.sql_client.create(cereal)
                 return result.to_json(), result.status_code
             else:
-                product_exists = self.sql_client.does_product_exist(cereal.id)
+                product_exists = self.sql_client.does_product_exist(id)
 
                 if product_exists:
                     result = self.sql_client.update(cereal.id, cereal)
