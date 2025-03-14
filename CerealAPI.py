@@ -72,7 +72,7 @@ class CerealAPI():
                         request.json.get('password')
                         
                     except Exception as e:
-                        return ApiResponse("error", str(e), 400).to_json(), 400
+                        return ApiResponse("error", "No password set", 400).to_json(), 400
                     
                     authorised = is_authorised(request.json)
 
@@ -91,7 +91,7 @@ class CerealAPI():
                         request.json.get('password')
                         
                     except Exception as e:
-                        return ApiResponse("error", str(e), 400).to_json(), 400
+                        return ApiResponse("error", "No password set", 400).to_json(), 400
 
                     authorised = is_authorised(request.json)
 
